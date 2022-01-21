@@ -12,8 +12,9 @@ process.on('unhandledRejection', error => {
 function findUser(params) {
   return new Promise((resolve, reject) => {
     const userName = params.userName
-    users.find({ 'userName': userName }).exec(function (err, data) {
-      console.log(data, 222222222)
+    users.find({
+      'userName': userName
+    }).exec(function (err, data) {
       resolve(data)
     })
   })
@@ -24,27 +25,49 @@ function findPass(params) {
   return new Promise((resolve, reject) => {
     const passWord = params.passWord
     const userName = params.userName
-      users.find({'userName': userName, 'passWord': passWord }).exec(function (err, data) {
-        console.log(data, 444444444444)
+    users.find({
+      'userName': userName,
+      'passWord': passWord
+    }).exec(function (err, data) {
       resolve(data)
     })
   })
 }
 
 module.exports = {
-  async signIn(request, response, handler){
+  async signIn(request, response, handler) {
     let param = await axios.grabPostParams(request)
     findUser(param).then(res => {
-      if(res.length) {
+      console.log(res)
+      if (res.length) {
         findPass(param).then(res => {
-          console.log(6666666, res)
           jsonParse.sendResult(response, 200, '登陆成功', )
         })
       } else {
-        console.log(888888888, res)
         jsonParse.sendResult(response, 0, '未查询到该用户', )
       }
     })
+  },
+  async signUp(request, response, handler) {
+    let param = await axios.grabPostParams(request)
+    findUser(param).then(res => {
+      if(res.length) {
+        jsonParse.sendResult(response, 0, '该用户已存在', )
+      } else {
+        let user = new users({
+          userName: param.userName,
+          passWord: param.passWord
+        })
+        user.save(function (err, res) {
+          if (err) {
+            jsonParse.sendResult(0, '该用户已存在', )
+          } else {
+            jsonParse.sendResult(response, 200, '注册成功', )
+          }
+  
+        })
+      }
+      
+    })
   }
 }
-

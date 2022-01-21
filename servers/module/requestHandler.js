@@ -6,6 +6,7 @@ const jsonParse = require('../lib/jsonParse.js')
 const db = require('../module/db/db.js')
 
 const register = require('./handle/register.js')
+console.log(register)
 
 
 // 连接DB

@@ -5,7 +5,12 @@ const routeMap = {
   '/signIn': {
     handler: 'signIn',
     needVerify: false
-  }
+  },
+  '/signUp': {
+    handler: 'signUp',
+    needVerify: false
+  },
+  
 }
 
 exports.routeMap = routeMap
