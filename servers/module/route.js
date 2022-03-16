@@ -18,9 +18,9 @@
      if (typeof handler === 'function') {
          // 是否需要验证登录态
          if (route.needVerify) {
-             requestHandler.verifyLogin(request, response, handler)
+            requestHandler.verifyLogin(request, response, handler)
          } else {
-             handler(request, response)
+            handler(request, response)
          }
      } else {
          getHandler('noHandler')(request, response)

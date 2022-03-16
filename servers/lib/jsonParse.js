@@ -4,14 +4,14 @@
 
 const document = require('../api/document.js')
 
-const getResultJsonStr = (code = -1, data = [], page = {
+const getResultJsonStr = (code = -1, data = [], msg = '',  page = {
     current: 1,
     pageSize: 10,
     total: 0
 }) => {
     return {
         status: code === 200 ? 'ok' : 'error',
-        msg: document.list[code] || document.list[-1],
+        msg:  msg || document.list[code] || document.list[-1],
         code,
         data,
         page
@@ -28,8 +28,8 @@ const sendJson = (response, json) => {
     response.end(JSON.stringify(json))
 }
 
-const sendResult = (response, code = -1, data = '', page) => {
-    sendJson(response, getResultJsonStr(code, data, page))
+const sendResult = (response, code = -1, data = '', msg = '', page) => {
+    sendJson(response, getResultJsonStr(code, data, msg, page))
 }
 
 module.exports = {

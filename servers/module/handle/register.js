@@ -1,6 +1,8 @@
 const db = require("../../module/db/db.js")
 const jsonParse = require('../../lib/jsonParse.js')
 const axios = require("../../lib/params.js")
+const jwt = require('jsonwebtoken');
+const sd = require('silly-datetime')
 
 const users = db.getSchema("users")
 
@@ -34,29 +36,82 @@ function findPass(params) {
   })
 }
 
+/** token生成 */
+function createToken(rule, time) {
+  return new Promise((resolve, reject) => {
+    jwt.sign(rule, 'secret', {
+      expiresIn: time || 3600
+    }, (err, token) => {
+      if (err) {
+        resolve('')
+      } else {
+        resolve(token)
+      }
+    })
+  })
+}
+
 module.exports = {
+  // 登录接口
   async signIn(request, response, handler) {
     let param = await axios.grabPostParams(request)
     findUser(param).then(res => {
-      console.log(res)
       if (res.length) {
         findPass(param).then(res => {
-          jsonParse.sendResult(response, 200, '登陆成功', )
+          const rule = {
+            userName: param.userName
+          }
+          createToken(rule).then(token => {
+            jsonParse.sendResult(response, 200, {
+              token: "dj" + token
+            }, '登录成功')
+          })
         })
       } else {
         jsonParse.sendResult(response, 0, '未查询到该用户', )
       }
     })
   },
+
+  // 重新登录
+  async resetToken(request, response, handler) {
+    let token = request.headers['x-token'].replace('dj', '');
+    const decodeResult = jwt.decode(token)
+    const rule = {
+      userName: decodeResult.userName
+    }
+    createToken(rule, 3600).then(token => {
+      jsonParse.sendResult(response, 200, {
+        token: "dj" + token
+      }, '重新登录成功')
+    })
+  },
+
+  // 获取
+  async getUser(request, response, handler) {
+    users.find().exec(function (err, data) {
+      jsonParse.sendResult(response, 200, data)
+    })
+  },
+
+  // 注册接口
   async signUp(request, response, handler) {
     let param = await axios.grabPostParams(request)
+    if(!param.userName) {
+      jsonParse.sendResult(0, '用户名为空', )
+    }
+    if(!param.passWord) {
+      jsonParse.sendResult(0, '密码为空', )
+    }
     findUser(param).then(res => {
-      if(res.length) {
+      if (res.length) {
         jsonParse.sendResult(response, 0, '该用户已存在', )
       } else {
         let user = new users({
           userName: param.userName,
-          passWord: param.passWord
+          passWord: param.passWord,
+          createTime: sd.format(new Date(), 'YYYY-MM-DD HH:mm:ss'),
+          vipLv: '00001'
         })
         user.save(function (err, res) {
           if (err) {
@@ -64,10 +119,8 @@ module.exports = {
           } else {
             jsonParse.sendResult(response, 200, '注册成功', )
           }
-  
         })
       }
-      
     })
   }
 }

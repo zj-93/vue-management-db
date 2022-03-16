@@ -39,6 +39,7 @@
  }
  
  const getSchema = (schema, useCreateIndex = false) => {
+     console.log(schema)
      if (schema && schemaList[schema]) {
          // mongoose.set('useCreateIndex', useCreateIndex)
         return mongoose.model(schema, schemaList[schema], schema)
